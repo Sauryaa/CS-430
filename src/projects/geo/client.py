@@ -8,9 +8,14 @@ Client implementation
 import argparse
 import logging
 import socket
+import sys
 
 HOST = "localhost"
 PORT = 4300
+BUFFER_SIZE = 1024
+QUIT_MESSAGE = "BYE"
+
+logger = logging.getLogger("root")
 
 
 def format_message(message: str) -> bytes:
@@ -19,7 +24,7 @@ def format_message(message: str) -> bytes:
     :param message: message to encode
     :return: message as bytes
     """
-    # TODO: Implement this function
+    return message.encode("utf-8")
 
 
 def parse_data(data: bytes) -> str:
@@ -28,7 +33,7 @@ def parse_data(data: bytes) -> str:
     :param data: data received
     :return: decoded string
     """
-    # TODO: Implement this function
+    return data.decode("utf-8")
 
 
 def read_user_input() -> str:
@@ -36,20 +41,36 @@ def read_user_input() -> str:
 
     :return: country name
     """
-    # TODO: Implement this function
+    try:
+        return input().strip()
+    except EOFError:
+        # No more input: behave as if the user said goodbye
+        return QUIT_MESSAGE
 
 
 def client_loop():
     """Main client loop"""
     print("The client has started")
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-        # TODO: Implement this function
-        ...
+        while True:
+            print(f"Enter the country name ({QUIT_MESSAGE} to quit): ", end="", flush=True)
+            country = read_user_input()
+            logger.debug("Sending %s to %s:%d", country, HOST, PORT)
+            sock.sendto(format_message(country), (HOST, PORT))
+            # Even the farewell is acknowledged, which lets both sides quit gracefully
+            data, server_address = sock.recvfrom(BUFFER_SIZE)
+            response = parse_data(data)
+            logger.debug("Received %s from %s", response, server_address)
+            if country == QUIT_MESSAGE:
+                break
+            print(response)
     print("The client has finished")
 
 
 def main():
     """Main function"""
+    # Capitals contain non-ASCII characters that the default Windows console cannot encode
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     arg_parser = argparse.ArgumentParser(description="Enable debugging")
     arg_parser.add_argument("-d", "--debug", action="store_true", help="Enable logging.DEBUG mode")
     args = arg_parser.parse_args()
