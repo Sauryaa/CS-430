@@ -1,7 +1,7 @@
 """
-Server implementation
+geo Server implementation
 
-@author:
+@author: Saurya Jonchhe
 @version: 2026.9
 """
 
@@ -79,7 +79,6 @@ def server_loop(world: dict):
             country = parse_data(data)
             logger.debug("Received %s from %s", country, client_address)
             if country == QUIT_MESSAGE:
-                # Acknowledge the farewell so the client can quit as well
                 sock.sendto(format_message(QUIT_MESSAGE), client_address)
                 logger.debug("Disconnecting from %s", client_address)
                 break

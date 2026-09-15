@@ -1,7 +1,7 @@
 """
-Client implementation
+geo Client implementation
 
-@author:
+@author: Saurya Jonchhe
 @version: 2026.9
 """
 
@@ -44,7 +44,6 @@ def read_user_input() -> str:
     try:
         return input().strip()
     except EOFError:
-        # No more input: behave as if the user said goodbye
         return QUIT_MESSAGE
 
 
@@ -57,7 +56,6 @@ def client_loop():
             country = read_user_input()
             logger.debug("Sending %s to %s:%d", country, HOST, PORT)
             sock.sendto(format_message(country), (HOST, PORT))
-            # Even the farewell is acknowledged, which lets both sides quit gracefully
             data, server_address = sock.recvfrom(BUFFER_SIZE)
             response = parse_data(data)
             logger.debug("Received %s from %s", response, server_address)
@@ -69,10 +67,10 @@ def client_loop():
 
 def main():
     """Main function"""
-    # Capitals contain non-ASCII characters that the default Windows console cannot encode
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     arg_parser = argparse.ArgumentParser(description="Enable debugging")
-    arg_parser.add_argument("-d", "--debug", action="store_true", help="Enable logging.DEBUG mode")
+    arg_parser.add_argument(
+        "-d", "--debug", action="store_true", help="Enable logging.DEBUG mode"
+    )
     args = arg_parser.parse_args()
     logger = logging.getLogger("root")
     if args.debug:
